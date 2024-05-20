@@ -10,7 +10,8 @@ before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 script:
-  - ./funny-regex/gradlew build
+  - cd ./funny-regex/
+  - ./gradlew build
 
 
 cache:
