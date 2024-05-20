@@ -1,7 +1,29 @@
 plugins {
     java
     kotlin("jvm") version "1.9.23"
+    jacoco
+    id("com.github.nbaztec.coveralls-jacoco") version "1.2.20"
 }
+
+
+tasks.test {
+    useJUnitPlatform()
+    systemProperty("cucumber.junit-platform.naming-strategy", "long")
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    finalizedBy(tasks.coverallsJacoco)
+    reports {
+        xml.required = true
+    }
+}
+
+tasks.coverallsJacoco {
+    dependsOn(tasks.jacocoTestReport)
+}
+
 
 group = "com.anarchyghost"
 version = "1.0-SNAPSHOT"
@@ -24,11 +46,6 @@ dependencies {
 
 }
 
-
-tasks.test {
-    useJUnitPlatform()
-    systemProperty("cucumber.junit-platform.naming-strategy", "long")
-}
 kotlin {
     jvmToolchain(17)
 }
