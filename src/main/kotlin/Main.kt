@@ -1,5 +1,7 @@
 package com.anarchyghost
 
+import java.io.File
+import java.nio.file.Paths
 import java.text.DecimalFormat
 
 //Слова должны быть в порядке убывания, т.е. "тысяч" должно идти после "тысячи"!!!
@@ -304,22 +306,28 @@ fun Collection<String>.unitsRegex(name: String) = "(?<$name>(${hRegex(name)}\\s+
 val fullRegex = units.map { (key, value) -> value.unitsRegex(key) }
     .joinToString(prefix = "(", postfix = "\\s*)?(?<e>${hRegex("e")})?", separator = "\\s*)?(")
 
-fun main() {
-    val a = fullRegex.toRegex().replace("сто двадцать один миллион белых лошадок бегали по триллиону полей") {
-        if (it.value.isBlank()) it.value
-        else DecimalFormat("###,###").format(unitsCoefficient.keys.fold(0L) { uAcc, uKey ->
-            it.groups[uKey]?.let { _ ->
-                val coefficient = unitsCoefficient[uKey]!!
-                val hAcc = h.keys.fold(0L) { hAcc, hKey ->
-                    it.groups["$uKey$hKey"]?.let { hGroup ->
-                        hAcc + h[hKey]!![hGroup.value]!!
-                    } ?: hAcc
-                }
-                //Случа когда есть слово Миллиард
-                if (hAcc == 0L && coefficient != 1L) coefficient
-                else uAcc + hAcc * coefficient
-            } ?: uAcc
-        }) + " "
-    }
-    println(a)
+
+fun String.replaceTextToDigits() = fullRegex.toRegex().replace(this) {
+    if (it.value.isBlank()) it.value
+    else DecimalFormat("###,###").format(unitsCoefficient.keys.fold(0L) { uAcc, uKey ->
+        it.groups[uKey]?.let { _ ->
+            val coefficient = unitsCoefficient[uKey]!!
+            val hAcc = h.keys.fold(0L) { hAcc, hKey ->
+                it.groups["$uKey$hKey"]?.let { hGroup ->
+                    hAcc + h[hKey]!![hGroup.value]!!
+                } ?: hAcc
+            }
+            //Случа когда есть например только слово миллиард
+            if (hAcc == 0L && coefficient != 1L) coefficient
+            else uAcc + hAcc * coefficient
+        } ?: uAcc
+    }) + " "
+}
+
+fun String.toFile(): File = Paths.get(this).toFile()
+
+fun main(args: Array<String>) {
+    val file = args[0].toFile()
+    check(file.isFile) {"File not found"}
+    println(file.readText().replaceTextToDigits())
 }
