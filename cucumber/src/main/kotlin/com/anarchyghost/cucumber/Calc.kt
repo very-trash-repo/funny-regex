@@ -20,4 +20,8 @@ class Calc(
     fun result(): Double {
         return this.number
     }
+
+    fun testMethod() {
+        return 0
+    }
 }
