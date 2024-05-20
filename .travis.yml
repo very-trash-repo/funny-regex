@@ -5,5 +5,23 @@ os: linux
 dist: trusty
 jdk: oraclejdk17
 
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
 script:
-  - ./gradlew build --scan -s
+  - ./gradlew build
+
+deploy:
+  provider: releases
+  api_key: ${GITHUB_OAUTH}
+  file: ./build/libs/funny-regex-1.0-SNAPSHOT.jar
+  skip_cleanup: true
+  on:
+    branch: master
+
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
